@@ -1,0 +1,190 @@
+INSERT INTO monthly_chore (year, month, member_id, chore_dim_id) VALUES
+(2017,6,1,1),
+(2017,6,2,1),
+(2017,6,3,1),
+(2017,6,4,1),
+(2017,6,5,1),
+(2017,6,6,1),
+(2017,6,7,1),
+(2017,6,8,2),
+(2017,6,9,2),
+(2017,6,10,3),
+(2017,6,11,5),
+(2017,6,12,5),
+(2017,6,13,5),
+(2017,6,14,5),
+(2017,5,1,5),
+(2017,5,2,5),
+(2017,5,3,5),
+(2017,5,4,1),
+(2017,5,5,1),
+(2017,5,6,1),
+(2017,5,7,4),
+(2017,5,8,5),
+(2017,5,9,1),
+(2017,5,10,1),
+(2017,5,11,2),
+(2017,5,12,3),
+(2017,5,13,1),
+(2017,5,14,2),
+(2017,4,1,1),
+(2017,4,2,1),
+(2017,4,3,1),
+(2017,4,4,5),
+(2017,4,5,5),
+(2017,4,6,3),
+(2017,4,7,1),
+(2017,4,8,1),
+(2017,4,9,5),
+(2017,4,10,5),
+(2017,4,11,1),
+(2017,4,12,2),
+(2017,4,13,2),
+(2017,3,1,5),
+(2017,3,2,1),
+(2017,3,3,3),
+(2017,3,4,2),
+(2017,3,5,1),
+(2017,3,6,5),
+(2017,3,7,5),
+(2017,3,8,1),
+(2017,3,9,2),
+(2017,3,10,1),
+(2017,3,11,5),
+(2017,3,12,1),
+(2017,3,13,1),
+(2017,2,1,3),
+(2017,2,2,1),
+(2017,2,3,1),
+(2017,2,4,1),
+(2017,2,5,1),
+(2017,2,6,1),
+(2017,2,7,4),
+(2017,2,8,5),
+(2017,2,9,5),
+(2017,2,10,1),
+(2017,2,11,2),
+(2017,2,12,5),
+(2017,2,13,5),
+(2017,1,1,5),
+(2017,1,2,5),
+(2017,1,3,5),
+(2017,1,4,1),
+(2017,1,5,5),
+(2017,1,6,1),
+(2017,1,7,4),
+(2017,1,8,1),
+(2017,1,9,2),
+(2017,1,10,3),
+(2017,1,11,1),
+(2017,1,12,1),
+(2017,1,13,2),
+(2016,12,1,2),
+(2016,12,2,1),
+(2016,12,3,1),
+(2016,12,4,5),
+(2016,12,5,2),
+(2016,12,6,1),
+(2016,12,7,1),
+(2016,12,8,1),
+(2016,12,9,5),
+(2016,12,10,5),
+(2016,12,11,5),
+(2016,12,12,3),
+(2016,12,13,1),
+(2016,11,1,1),
+(2016,11,2,2),
+(2016,11,3,3),
+(2016,11,4,1),
+(2016,11,5,1),
+(2016,11,6,5),
+(2016,11,7,5),
+(2016,11,8,5),
+(2016,11,9,1),
+(2016,11,10,4),
+(2016,11,11,2),
+(2016,11,12,1),
+(2016,11,13,1),
+(2016,10,1,5),
+(2016,10,2,1),
+(2016,10,3,1),
+(2016,10,4,2),
+(2016,10,5,5),
+(2016,10,6,1),
+(2016,10,7,1),
+(2016,10,8,3),
+(2016,10,9,4),
+(2016,10,10,1),
+(2016,10,11,1),
+(2016,10,12,5),
+(2016,10,13,5);
+
+DROP TABLE IF EXISTS monthly_chore;
+CREATE TABLE monthly_chore (
+  id int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  year int(11) DEFAULT NULL,
+  month int(11) DEFAULT NULL,
+  member_id int(11) DEFAULT NULL,
+  chore_dim_id int(11) DEFAULT NULL
+);
+
+CREATE TABLE chore_dim (
+  id int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  chore varchar(255) DEFAULT NULL 
+);
+
+DROP TABLE IF EXISTS member;
+CREATE TABLE member (
+  id int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,  
+  firstname varchar(255) DEFAULT NULL,
+  state varchar(255) DEFAULT NULL
+);
+
+INSERT INTO chore_dim (id, chore) VALUES
+(1, 'Kitchen'),
+(2, 'Common Area'),
+(3, 'Trash'),
+(4, 'Outside'),
+(5, 'Bathrooms');
+
+INSERT INTO member (firstname, state) VALUES
+('Will', 'ACTIVE'),
+('Shayne', 'ACTIVE'),
+('Peter', 'ACTIVE'),
+('Kevine', 'ACTIVE'),
+('Sabrina', 'ACTIVE'),
+('Seth', 'ACTIVE'),
+('Luminesse', 'ACTIVE'),
+('Nancy', 'ACTIVE'),
+('Charlene', 'ACTIVE'),
+('Anthony', 'ACTIVE'),
+('Lilli', 'ACTIVE'),
+('Elijah', 'ACTIVE'),
+('Yolie', 'ACTIVE'),
+('Sherry', 'ACTIVE'),
+('Austin', 'ACTIVE');
+
+
+# group by firstname and chore
+select b.firstname, c.chore, count(*) n, max(d.total_chores) AS total_chores, count(*) / max(d.total_chores) AS pct_chore from monthly_chore a
+INNER JOIN member b on b.id = a.member_id
+INNER JOIN chore_dim c on c.id = a.chore_dim_id
+INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id
+group by 1,2;
+
+# group by firstname
+# 
+select b.firstname, 
+SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,
+SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,
+SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,
+SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,
+SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,
+SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,
+ max(d.total_chores) AS total_chores
+from monthly_chore a
+INNER JOIN member b on b.id = a.member_id
+INNER JOIN chore_dim c on c.id = a.chore_dim_id
+INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id
+group by 1
+order by pct_uncommon asc, pct_common_area asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc;
