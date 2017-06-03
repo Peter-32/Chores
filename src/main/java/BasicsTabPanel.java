@@ -66,20 +66,1582 @@ public class BasicsTabPanel extends JPanel {
             Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection("jdbc:mysql://localhost/database1?autoReconnect=true&useSSL=false","root","");
             Statement sqlState = conn.createStatement();
-            String selectStuff = "select b.firstname AS name, \n" +
-                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS kitch,\n" +
-                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS c_area,\n" +
-                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS trash,\n" +
-                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS outsi,\n" +
-                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS bathr,\n" +
-                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS uncom,\n" +
-                    " max(d.total_chores) AS total\n" +
+            String selectStuff = "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Kitchen' AS new_chore\n" +
                     "from monthly_chore a\n" +
-                    "INNER JOIN member b on b.id = a.member_id and b.state = 'ACTIVE'\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
                     "INNER JOIN chore_dim c on c.id = a.chore_dim_id\n" +
                     "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "LEFT JOIN \n" +
+                    "          (select * from (          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Outside' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN chore_dim c on c.id = a.chore_dim_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          LEFT JOIN (select * from (          (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores, 'Trash' AS new_chore\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN chore_dim c on c.id = a.chore_dim_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    LEFT JOIN (select * from\n" +
+                    "                    (\n" +
+                    "                              (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              where upstairs = 0\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                              limit 1\n" +
+                    "                              )\n" +
+                    "                              \n" +
+                    "                              UNION ALL \n" +
+                    "                              \n" +
+                    "                              #Upper common area\n" +
+                    "                              (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              where upstairs = 1\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                              limit 1)\n" +
+                    "                              \n" +
+                    "                              UNION ALL \n" +
+                    "                              \n" +
+                    "                              # bathroom 1 to 4\n" +
+                    "                              (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              left JOIN (\n" +
+                    "                              select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              where upstairs = 0\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                              limit 1\n" +
+                    "                              ) x on x.firstname = b.firstname \n" +
+                    "                              where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                              limit 1)\n" +
+                    "                              \n" +
+                    "                              UNION ALL \n" +
+                    "                              \n" +
+                    "                              (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              left JOIN (\n" +
+                    "                              select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              where upstairs = 0\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                              limit 1\n" +
+                    "                              ) x on x.firstname = b.firstname \n" +
+                    "                              where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                              limit 1)\n" +
+                    "                              \n" +
+                    "                              UNION ALL \n" +
+                    "                              \n" +
+                    "                              (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              left JOIN (\n" +
+                    "                              select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              where upstairs = 1\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                              limit 1\n" +
+                    "                              ) x on x.firstname = b.firstname \n" +
+                    "                              where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                              limit 1)\n" +
+                    "                              \n" +
+                    "                              UNION ALL \n" +
+                    "                              \n" +
+                    "                              (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              left JOIN (\n" +
+                    "                              select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                              SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                              SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                              SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                              SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                              SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                              SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                               max(d.total_chores) AS total_chores\n" +
+                    "                              from monthly_chore a\n" +
+                    "                              INNER JOIN member b on b.id = a.member_id\n" +
+                    "                              INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                              where upstairs = 1\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                              limit 1\n" +
+                    "                              ) x on x.firstname = b.firstname \n" +
+                    "                              where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "                              group by 1,2,3\n" +
+                    "                              order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                              limit 1)\n" +
+                    "                              ) x) x on\n" +
+                    "                              x.firstname = b.firstname\n" +
+                    "                             where x.firstname is null\n" +
+                    "                    group by 1\n" +
+                    "                    order by pct_trash asc, pct_common_area asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc limit 1\n" +
+                    "                    )\n" +
+                    "                     UNION ALL\n" +
+                    "                    # final querys\n" +
+                    "                    # lower common area\n" +
+                    "                    \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    )\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    #Upper common area\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    # bathroom 1 to 4\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    ) x ) x on x.firstname = b.firstname\n" +
+                    "                    where x.firstname is null\n" +
+                    "          group by 1\n" +
+                    "          order by pct_outside asc, pct_common_area asc, pct_bathroom asc, pct_kitchen asc limit 1\n" +
+                    "          )\n" +
+                    "           UNION ALL\n" +
+                    "                    \n" +
+                    "                    \n" +
+                    "                    \n" +
+                    "              \n" +
+                    "          (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Trash' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN chore_dim c on c.id = a.chore_dim_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          LEFT JOIN (select * from\n" +
+                    "          (\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    )\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    #Upper common area\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    # bathroom 1 to 4\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    ) x) x on\n" +
+                    "                    x.firstname = b.firstname\n" +
+                    "                   where x.firstname is null\n" +
+                    "          group by 1\n" +
+                    "          order by pct_trash asc, pct_common_area asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc limit 1\n" +
+                    "          )\n" +
+                    "           UNION ALL\n" +
+                    "          # final querys\n" +
+                    "          # lower common area\n" +
+                    "          \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          )\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          #Upper common area\n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          # bathroom 1 to 4\n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)          ) x ) x on x.firstname = b.firstname\n" +
+                    "\n" +
+                    "where x.firstname is null\n" +
                     "group by 1\n" +
-                    "order by uncom asc, c_area asc, trash asc, outsi asc, bathr asc, kitch asc";
+                    "order by pct_kitchen asc\n" +
+                    ") \n" +
+                    "UNION ALL\n" +
+                    "\n" +
+                    "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Outside' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN chore_dim c on c.id = a.chore_dim_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "LEFT JOIN (select * from (          (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Trash' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN chore_dim c on c.id = a.chore_dim_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          LEFT JOIN (select * from\n" +
+                    "          (\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    )\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    #Upper common area\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    # bathroom 1 to 4\n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 0\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    \n" +
+                    "                    UNION ALL \n" +
+                    "                    \n" +
+                    "                    (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    left JOIN (\n" +
+                    "                    select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "                    SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "                    SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "                    SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "                    SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "                    SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "                    SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "                     max(d.total_chores) AS total_chores\n" +
+                    "                    from monthly_chore a\n" +
+                    "                    INNER JOIN member b on b.id = a.member_id\n" +
+                    "                    INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "                    where upstairs = 1\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "                    limit 1\n" +
+                    "                    ) x on x.firstname = b.firstname \n" +
+                    "                    where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "                    group by 1,2,3\n" +
+                    "                    order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "                    limit 1)\n" +
+                    "                    ) x) x on\n" +
+                    "                    x.firstname = b.firstname\n" +
+                    "                   where x.firstname is null\n" +
+                    "          group by 1\n" +
+                    "          order by pct_trash asc, pct_common_area asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc limit 1\n" +
+                    "          )\n" +
+                    "           UNION ALL\n" +
+                    "          # final querys\n" +
+                    "          # lower common area\n" +
+                    "          \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          )\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          #Upper common area\n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          # bathroom 1 to 4\n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          ) x ) x on x.firstname = b.firstname\n" +
+                    "          where x.firstname is null\n" +
+                    "group by 1\n" +
+                    "order by pct_outside asc, pct_common_area asc, pct_bathroom asc, pct_kitchen asc limit 1\n" +
+                    ")\n" +
+                    " UNION ALL\n" +
+                    "          \n" +
+                    "          \n" +
+                    "          \n" +
+                    "    \n" +
+                    "(\n" +
+                    "select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Trash' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN chore_dim c on c.id = a.chore_dim_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "LEFT JOIN (select * from\n" +
+                    "(\n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          )\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          #Upper common area\n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          # bathroom 1 to 4\n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 0\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          \n" +
+                    "          UNION ALL \n" +
+                    "          \n" +
+                    "          (select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          left JOIN (\n" +
+                    "          select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "          SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "          SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "          SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "          SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "          SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "          SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    "           max(d.total_chores) AS total_chores\n" +
+                    "          from monthly_chore a\n" +
+                    "          INNER JOIN member b on b.id = a.member_id\n" +
+                    "          INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "          where upstairs = 1\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "          limit 1\n" +
+                    "          ) x on x.firstname = b.firstname \n" +
+                    "          where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "          group by 1,2,3\n" +
+                    "          order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "          limit 1)\n" +
+                    "          ) x) x on\n" +
+                    "          x.firstname = b.firstname\n" +
+                    "         where x.firstname is null\n" +
+                    "group by 1\n" +
+                    "order by pct_trash asc, pct_common_area asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc limit 1\n" +
+                    ")\n" +
+                    " UNION ALL\n" +
+                    "# final querys\n" +
+                    "# lower common area\n" +
+                    "\n" +
+                    "\n" +
+                    "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "where upstairs = 0\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "limit 1\n" +
+                    ")\n" +
+                    "\n" +
+                    "UNION ALL \n" +
+                    "\n" +
+                    "#Upper common area\n" +
+                    "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Common Area' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "where upstairs = 1\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "limit 1)\n" +
+                    "\n" +
+                    "UNION ALL \n" +
+                    "\n" +
+                    "# bathroom 1 to 4\n" +
+                    "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "left JOIN (\n" +
+                    "select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "where upstairs = 0\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "limit 1\n" +
+                    ") x on x.firstname = b.firstname \n" +
+                    "where b.bathroom_num = 1 and x.firstname is null\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "limit 1)\n" +
+                    "\n" +
+                    "UNION ALL \n" +
+                    "\n" +
+                    "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "left JOIN (\n" +
+                    "select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "where upstairs = 0\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "limit 1\n" +
+                    ") x on x.firstname = b.firstname \n" +
+                    "where b.bathroom_num = 2 and x.firstname is null\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "limit 1)\n" +
+                    "\n" +
+                    "UNION ALL \n" +
+                    "\n" +
+                    "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "left JOIN (\n" +
+                    "select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "where upstairs = 1\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "limit 1\n" +
+                    ") x on x.firstname = b.firstname \n" +
+                    "where b.bathroom_num = 3 and x.firstname is null\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "limit 1)\n" +
+                    "\n" +
+                    "UNION ALL \n" +
+                    "\n" +
+                    "(select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores, 'Bathroom' AS new_chore\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "left JOIN (\n" +
+                    "select b.firstname, b.upstairs, b.bathroom_num,\n" +
+                    "SUM(IF(chore_dim_id=1,1,0)) / max(d.total_chores) AS pct_kitchen,\n" +
+                    "SUM(IF(chore_dim_id=2,1,0)) / max(d.total_chores) AS pct_common_area,\n" +
+                    "SUM(IF(chore_dim_id=3,1,0)) / max(d.total_chores) AS pct_trash,\n" +
+                    "SUM(IF(chore_dim_id=4,1,0)) / max(d.total_chores) AS pct_outside,\n" +
+                    "SUM(IF(chore_dim_id=5,1,0)) / max(d.total_chores) AS pct_bathroom,\n" +
+                    "SUM(IF(chore_dim_id IN (2,3,4),1,0)) / max(d.total_chores) AS pct_uncommon,\n" +
+                    " max(d.total_chores) AS total_chores\n" +
+                    "from monthly_chore a\n" +
+                    "INNER JOIN member b on b.id = a.member_id\n" +
+                    "INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id\n" +
+                    "where upstairs = 1\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_common_area asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_bathroom asc, pct_kitchen asc\n" +
+                    "limit 1\n" +
+                    ") x on x.firstname = b.firstname \n" +
+                    "where b.bathroom_num = 4 and x.firstname is null\n" +
+                    "group by 1,2,3\n" +
+                    "order by pct_bathroom asc, pct_uncommon asc, pct_trash asc, pct_outside asc, pct_kitchen asc\n" +
+                    "limit 1)";
             rows = sqlState.executeQuery(selectStuff);
             int numOfCol;
             metaData = rows.getMetaData();
@@ -94,7 +1656,7 @@ public class BasicsTabPanel extends JPanel {
             while(rows.next()) {
                 String newChore;
                 if (row==1) {
-                    
+
                 }
                 tempRow = new Object[]{rows.getString(1), rows.getString(2),
                         rows.getString(3),rows.getString(4),rows.getString(5),rows.getString(6),
