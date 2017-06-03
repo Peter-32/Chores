@@ -1,0 +1,17 @@
+buttons
+    generate new month chores
+        Asks if a list is the active user list, if not add or subtract them, then hit save.
+        Hit button to save this into db as chosen
+    backfill historical data with a csv file
+
+
+
+
+
+
+
+Logic:
+    lowest percentage gets outside then trash the common areas then bathroom
+    randomize the days for kitchen but don't record the days
+
+
