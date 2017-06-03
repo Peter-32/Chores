@@ -33,7 +33,7 @@ public class TheFrame extends JFrame {
         jtp.addTab("New Month", basicsTabPanel);
         jtp.addTab("Historical", jp2);
 
-        this.setSize(800, 800);
+        this.setSize(1200, 800);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
 

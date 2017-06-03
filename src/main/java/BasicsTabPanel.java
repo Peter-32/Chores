@@ -22,7 +22,7 @@ import java.sql.*;
 public class BasicsTabPanel extends JPanel {
 
     public static Object[][] databaseInfo;
-    public static Object[] columns = {"name","kitch","c_area","trash","outsi","bathr","uncom","total",};
+    public static Object[] columns = {"name","kitch","c_area","trash","outsi","bathr","uncom","total","new"};
     //firstname, ' ' AS next_chore, ' '  pct_kitchen, ' ' pct_common_area, ' ' pct_trash, ' ' pct_outside, ' ' pct_bathrooms from member where state = 'ACTIVE'";
     static ResultSet rows;
     static ResultSetMetaData metaData;
@@ -90,10 +90,15 @@ public class BasicsTabPanel extends JPanel {
                 columns[i] = metaData.getColumnName(i+1);
             }
             Object[] tempRow;
+            int row = 1;
             while(rows.next()) {
+                String newChore;
+                if (row==1) {
+                    
+                }
                 tempRow = new Object[]{rows.getString(1), rows.getString(2),
                         rows.getString(3),rows.getString(4),rows.getString(5),rows.getString(6),
-                        rows.getString(7), rows.getString(8)};
+                        rows.getString(7), rows.getString(8), newChore};
                 dTableModel.addRow(tempRow);
             }
         } catch (SQLException ex) {
