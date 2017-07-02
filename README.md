@@ -18,3 +18,6 @@ select b.firstname, upstairs AS upstair, bathroom_num AS bath_num,
                     INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id
                     group by 1,2,3
                     order by uncom asc, bathr asc, outside asc, c_area asc
+                    
+INSERT INTO monthly_chore (year, month, member_id, chore_dim_id) values 
+(2017,6,15,4),                    
