@@ -16,6 +16,7 @@ select b.firstname, upstairs AS upstair, bathroom_num AS bath_num,
                     INNER JOIN member b on b.id = a.member_id
                     INNER JOIN chore_dim c on c.id = a.chore_dim_id
                     INNER JOIN (select member_id, count(*) total_chores from monthly_chore group by 1) d on d.member_id = a.member_id
+                    where state = 'ACTIVE' 
                     group by 1,2,3
                     order by uncom asc, bathr asc, outside asc, c_area asc
                     
